@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MADAR - متجر مدار للإلكترونيات</title>
+    <style>
+        /* إعدادات التصميم العام */
+        :root {
+            --main-blue: #1a2a6c;
+            --madar-red: #b21f1f;
+            --gold: #fdbb2d;
+            --bg: #f0f2f5;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body { background: var(--bg); color: #333; overflow-x: hidden; }
+
+        /* الهيدر والأنيميشن */
+        header {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .logo { font-size: 2.5rem; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); animation: zoomIn 0.8s ease; }
+
+        /* القائمة */
+        nav { display: flex; justify-content: center; background: #222; padding: 12px; gap: 20px; }
+        nav a { color: #ddd; text-decoration: none; font-weight: bold; cursor: pointer; transition: 0.3s; padding: 5px 10px; border-radius: 5px; }
+        nav a:hover { background: var(--madar-red); color: white; transform: translateY(-3px); }
+
+        /* سلة المشتريات العائمة */
+        #cart-btn {
+            position: fixed; left: 20px; bottom: 20px; 
+            background: var(--madar-red); color: white; 
+            padding: 15px 25px; border-radius: 50px; 
+            cursor: pointer; z-index: 999; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: 0.3s; display: flex; align-items: center; gap: 10px;
+        }
+        #cart-btn:hover { transform: scale(1.1); background: #8e1a1a; }
+
+        /* الأقسام وحركات الفتح */
+        .section { display: none; padding: 40px 10% ; min-height: 80vh; }
+        .section.active { display: block; animation: fadeInRight 0.6s ease-out; }
+
+        /* شبكة المنتجات */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+
+        .card {
+            background: white; border-radius: 20px; padding: 20px; 
+            text-align: center; position: relative; overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.4s;
+            border-bottom: 4px solid transparent;
+        }
+        .card:hover { transform: translateY(-10px); border-bottom: 4px solid var(--madar-red); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+
+        .card img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; transition: 0.3s; }
+        .card:hover img { transform: scale(1.05); }
+
+        .price { font-size: 1.4rem; color: var(--main-blue); font-weight: 800; margin: 10px 0; }
+        
+        /* شارة المستعمل */
+        .used-tag {
+            background: #f39c12; color: white; position: absolute;
+            top: 15px; right: -30px; transform: rotate(45deg);
+            width: 120px; padding: 5px; font-size: 0.8rem; font-weight: bold;
+        }
+
+        .buy-btn {
+            background: var(--main-blue); color: white; border: none;
+            padding: 12px 25px; border-radius: 10px; cursor: pointer;
+            width: 100%; font-weight: bold; transition: 0.3s;
+        }
+        .buy-btn:hover { background: var(--madar-red); }
+
+        /* نافذة السلة الجانبية */
+        #cart-sidebar {
+            position: fixed; left: -350px; top: 0; width: 320px; height: 100%;
+            background: white; z-index: 2001; transition: 0.5s;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.2); padding: 25px;
+        }
+        #cart-sidebar.open { left: 0; }
+
+        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+
+        /* الحركات Animation */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        footer { background: #222; color: white; text-align: center; padding: 30px; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">MADAR</div>
+    <p>عالم الإلكترونيات بين يديك</p>
+</header>
+
+<nav>
+    <a onclick="showSection('home')">الرئيسية</a>
+    <a onclick="showSection('new')">جديد الأجهزة</a>
+    <a onclick="showSection('used')">قسم المستعمل</a>
+    <a onclick="showSection('accessories')">إكسسوارات</a>
+</nav>
+
+<div id="cart-btn" onclick="toggleCart()">
+    🛒 السلة (<span id="cart-count">0</span>)
+</div>
+
+<div id="cart-sidebar">
+    <h2>سلة مشترياتك</h2>
+    <hr style="margin: 15px 0;">
+    <div id="cart-items-list">
+        <p style="text-align:center; color:#999;">السلة فارغة حالياً</p>
+    </div>
+    <div style="margin-top:20px;">
+        <h3>الإجمالي: <span id="total-price">0</span> ₪</h3>
+        <button onclick="checkout()" style="background:#27ae60; color:white; width:100%; padding:15px; border:none; margin-top:15px; border-radius:8px; cursor:pointer; font-weight:bold;">تأكيد الطلب (واتساب)</button>
+        <button onclick="toggleCart()" style="background:#666; color:white; width:100%; padding:10px; border:none; margin-top:10px; border-radius:8px; cursor:pointer;">إغلاق</button>
+    </div>
+</div>
+
+<div id="home" class="section active">
+    <h2 style="text-align:center; margin-bottom:30px;">لماذا تختار MADAR؟</h2>
+    <div class="grid">
+        <div class="card">
+            <h3>كفالة حقيقية</h3>
+            <p>نضمن لك جودة الأجهزة الجديدة والمستعملة</p>
+        </div>
+        <div class="card">
+            <h3>أفضل الأسعار</h3>
+            <p>عروضنا دائماً هي الأقوى في السوق</p>
+        </div>
+    </div>
+</div>
+
+<div id="new" class="section">
+    <h2 style="text-align:center; margin-bottom:30px;">أحدث الأجهزة الجديدة</h2>
+    <div class="grid">
+        <div class="card">
+            <img src="https://img.icons8.com/plasticine/200/iphone-x.png" alt="iPhone 15">
+            <h3>iPhone 17 Pro Max</h3>
+            <p class="price">5,200 ₪</p>
+            <button class="buy-btn" onclick="addToCart('iPhone 17 Pro Max', 5200)">أضف للسلة</button>
+        </div>
+        <div class="card">
+            <img src="https://img.icons8.com/plasticine/200/samsung-galaxy-s22-ultra.png" alt="S24">
+            <h3>Samsung S24 Ultra</h3>
+            <p class="price">4,800 ₪</p>
+            <button class="buy-btn" onclick="addToCart('Samsung S24 Ultra', 4800)">أضف للسلة</button>
+        </div>
+    </div>
+</div>
+
+<div id="used" class="section">
+    <h2 style="text-align:center; margin-bottom:30px;">الأجهزة المستعملة (نظافة 100%)</h2>
+    <div class="grid">
+        <div class="card">
+            <div class="used-tag">مستعمل</div>
+            <img src="https://img.icons8.com/plasticine/200/iphone-x.png" alt="iPhone 13">
+            <h3>iPhone 11 (مستعمل)</h3>
+            <p class="price">2,400 ₪</p>
+            <button class="buy-btn" onclick="addToCart('iPhone 11 (Used)', 2400)">أضف للسلة</button>
+        </div>
+        <div class="card">
+            <div class="used-tag">مستعمل</div>
+            <img src="https://img.icons8.com/plasticine/200/ipad.png" alt="iPad">
+            <h3>iphone 14 pro max  (مستعمل)</h3>
+            <p class="price">1,850 ₪</p>
+            <button class="buy-btn" onclick="addToCart('iiphone 14 pro max (Used)', 1850)">أضف للسلة</button>
+        </div>
+    </div>
+</div>
+
+<div id="accessories" class="section">
+    <h2 style="text-align:center; margin-bottom:30px;">إكسسوارات أصلية</h2>
+    <div class="grid">
+        <div class="card">
+            <img src="https://img.icons8.com/plasticine/200/airpods-pro.png" alt="AirPods">
+            <h3>AirPods Pro 2</h3>
+            <p class="price">850 ₪</p>
+            <button class="buy-btn" onclick="addToCart('AirPods Pro 2', 850)">أضف للسلة</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>جميع الحقوق محفوظة لمتجر MADAR لبيع وصيانة الأجهزة الذكية © 2026</p>
+</footer>
+
+<script>
+    let cart = [];
+    let total = 0;
+
+    // وظيفة التنقل بين الأقسام
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    // وظائف السلة
+    function addToCart(name, price) {
+        cart.push({name, price});
+        updateUI();
+        // تنبيه بسيط
+        const btn = document.getElementById('cart-btn');
+        btn.style.background = '#27ae60';
+        setTimeout(() => btn.style.background = '#b21f1f', 500);
+    }
+
+    function updateUI() {
+        const list = document.getElementById('cart-items-list');
+        list.innerHTML = "";
+        total = 0;
+        
+        cart.forEach((item, index) => {
+            total += item.price;
+            list.innerHTML += `
+                <div class="cart-item">
+                    <span>${item.name}</span>
+                    <span>${item.price} ₪</span>
+                </div>`;
+        });
+        
+        document.getElementById('cart-count').innerText = cart.length;
+        document.getElementById('total-price').innerText = total;
+        
+        if(cart.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:#999;">السلة فارغة حالياً</p>';
+        }
+    }
+
+    function toggleCart() {
+        document.getElementById('cart-sidebar').classList.toggle('open');
+    }
+
+    function checkout() {
+        if(cart.length === 0) return alert("سلتك فارغة!");
+        
+        let msg = "طلب جديد من متجر MADAR:%0A";
+        cart.forEach(i => msg += `• ${i.name} (${i.price} ₪)%0A`);
+        msg += `%0A*الإجمالي: ${total} شيقل*`;
+        
+        // استبدل الرقم برقمك الحقيقي
+        window.open(`https://wa.me/972595505060?text=${msg}`);
+    }
+</script>
+
+</body>
+</html>
